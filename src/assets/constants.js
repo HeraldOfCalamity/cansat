@@ -17,6 +17,8 @@
 export const navOptions = [
     {id:'0', text:'Inicio', href:'/', active:true, type: 'link', enabled: true},
     {id:'1', text:'Info IA', href:'/ia', active:false, type: 'link', enabled: true},
+    {id:'2', text:'Monitoreo', href:'/monitoreo', active:false, type: 'link', enabled: true},
+    {id:'3', text:'Nosotros', href:'/nosotros', active:false, type: 'link', enabled: true},
 ]
 export const componentList = [
     {id:'0', img:'src/assets/images/esp32-cam.webp', title:'esp32-cam', desc:'ESP32-CAM, es un dispositivo que puede llamarse un todo en uno. Aparte de la conectividad Wifi y Bluetooth que viene de fábrica, pines GPIO, se le han añadido dos opciones más. Lleva integrado una pequeña cámara de video y una conexión para una tarjeta MicroSD, donde podremos almacenar fotos o videos.'},
