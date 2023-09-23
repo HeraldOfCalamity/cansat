@@ -15,7 +15,7 @@ export const Header = () => {
         <ul className="flex space-x-4 me-auto">
           {
             options.map(item =>
-              <li>
+              <li key = {item.id}>
                 <Link to={item.href} className="text-white hover:bg-teal-700 hover:text-gray-300 p-1 rounded">{item.text}</Link>
 
               </li>
