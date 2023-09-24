@@ -2,14 +2,14 @@ import { Component } from "../components/Component"
 import { componentList } from "../assets/constants"
 import { useState } from "react"
 
-export const Home = () => {
+export default function Home () {
   const [components, setComponents] = useState(componentList)
 
   return (
     <>
-      <div className="container mx-auto">
+      <div className="container mx-auto text-white">
 
-        <h1 className="text-3xl font-semibold border text-center py-3">Prometeo1.0</h1>
+        <h1 className="text-3xl font-semibold border text-center py-3 rounded-3xl">Prometeo1.0</h1>
 
         <div className="flex flex-row py-5">
           <div className="basis-1/2 px-3">
@@ -24,15 +24,15 @@ export const Home = () => {
             </p>
 
           </div>
-          <div className="basis-1/2 items-center justify-center border">
-            <img src="src/assets/images/cansat.jpg" alt="" className="w-96 mx-auto"/>
+          <div className="basis-1/2 items-center justify-center">
+            <img src="src/assets/images/cansat.jpg" alt="" className="w-96 mx-auto rounded-2xl"/>
           </div>
         </div>
 
         <div className="flex flex-col">
           {
             components.map(item => 
-              <Component key={item.id} img={item.img} desc={item.desc} title={item.title} />
+              <Component id={item.id} key={item.id} img={item.img} desc={item.desc} title={item.title} />
             )
           }
         </div>
