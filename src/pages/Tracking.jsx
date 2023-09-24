@@ -14,31 +14,58 @@ export default function Tracking() {
   const [cylinderg, set_cylinder] = useState();
 
   const [grafica1, set_grafica1] = useState();
+  const [grafica_gi, set_grafica_gi] = useState();
 
+  //MQ135
   const [co, set_co] = useState("");
+  const [alcohol, set_alcohol] = useState("");
+  const [tolueno, set_tolueno] = useState("");
+  const [nh4, set_nh4] = useState("");
+  const [acetona, set_acetona] = useState("");
 
+  //gps
   const [lat, set_lat] = useState("");
   const [long, set_long] = useState("");
+
+  //MPU9250
+  const [mpu_giro, set_mpu_giro] = useState([0,0,0]);
+
+
+  //time
+  const [segundos, set_segundos] = useState([0]);
 
   function getData() {
     axios.get('http://127.0.0.1:5000/api/get')
       .then(response => {
         // Actualiza el estado con los datos recibidos
         const dates = response.data[0];
+        //Gases
         set_co(dates.co);
+        set_alcohol(dates.alcohol);
+        set_tolueno(dates.toluen);
+        set_nh4(dates.nh4);
+        set_acetona(dates.acetona);
+
 
         //yaw, pitch, roll
-        set_x(parseFloat(dates.yaw))
-        set_y(parseFloat(dates.pitch))
+        set_x(parseFloat(dates.pitch))
+        set_y(parseFloat(dates.yaw))
         set_z(parseFloat(dates.roll))
 
         //gps
         set_lat(parseFloat(dates.latitud))
         set_long(parseFloat(dates.longitud))
+
+        //mpu
+        set_mpu_giro([parseFloat(dates.g_x),parseFloat(dates.g_y),parseFloat(dates.g_z)])
+        //tiempo
+        set_segundos(prevSegundos => prevSegundos.length<5 ? [...prevSegundos, prevSegundos[prevSegundos.length - 1] + 0.5] : [...prevSegundos.slice(1), prevSegundos[prevSegundos.length - 1] + 0.5]);
+        
       })
       .catch(error => {
         console.error('Error al realizar la solicitud GET:', error);
       });
+      
   }
 
 
@@ -46,20 +73,55 @@ export default function Tracking() {
     var graf1 = new Chart(document.getElementById("bar-chart"), {
       type: 'bar',
       data: {
-        labels: ["CO", "OXIGENO"],
+        labels: ["CO", "ALCOHOL", "TOLUENO", "NH4", "ACETONA"],
         datasets: [
           {
             label: "ppm",
-            backgroundColor: ["#3e95cd", "#3e95cd"],
+            backgroundColor: ["#3e95cd", "#3e95cd", "#3e95cd", "#3e95cd", "#3e95cd"],
             data: [15, 20]
           }
         ]
       },
       options: {
         legend: { display: false },
+        title: {
+          display: true,
+          text: 'Medicion del ambiente (en partes por millon)'
+        }
       }
     });
     set_grafica1(graf1);
+    var giro = new Chart(document.getElementById("line-chart-giroscopio"), {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          data: [],
+          label: "EJE X",
+          borderColor: "#3e95cd",
+          fill: false
+        }, {
+          data: [],
+          label: "EJE Y",
+          borderColor: "#8e5ea2",
+          fill: false
+        }, {
+          data: [],
+          label: "EJE Z",
+          borderColor: "#3cba9f",
+          fill: false
+        }, 
+        ]
+      },
+      options: {
+        title: {
+          display: true,
+          text: 'Datos del Giroscopio respecto el tiempo'
+        }
+      }
+    });
+    
+    set_grafica_gi(giro);
     new Chart(document.getElementById("line-chart"), {
       type: 'line',
       data: {
@@ -99,6 +161,7 @@ export default function Tracking() {
         }
       }
     });
+    
     new Chart(document.getElementById("doughnut-chart"), {
       type: 'doughnut',
       data: {
@@ -162,9 +225,9 @@ export default function Tracking() {
 
     // THREE JS
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color("rgb(15, 23, 42)");
+    //scene.background = new THREE.Color("rgb(15, 23, 42)");
     const camera = new THREE.PerspectiveCamera(50, (window.innerWidth / window.innerHeight), 0.1, 500);
-    const renderer = new THREE.WebGLRenderer();
+    const renderer = new THREE.WebGLRenderer({ alpha: true });
     renderer.setSize(window.innerWidth / 2, window.innerHeight / 2);
     document.getElementById('container').appendChild(renderer.domElement);
 
@@ -186,12 +249,13 @@ export default function Tracking() {
     set_renderer(renderer);
     set_cylinder(cylinder);
 
-
     renderer.render(scene, camera);
     console.log("INIT");
 
     setInterval(() => {
       getData();
+      
+      
     }, (500));
   }, [])
 
@@ -221,15 +285,41 @@ export default function Tracking() {
   useEffect(() => {
     if (grafica1) {
       grafica1.data.datasets[0].data[0] = parseFloat(co);
-      grafica1.data.datasets[0].data[1] = 25;
+      grafica1.data.datasets[0].data[1] = parseFloat(alcohol);
+      grafica1.data.datasets[0].data[2] = parseFloat(tolueno);
+      grafica1.data.datasets[0].data[3] = parseFloat(nh4);
+      grafica1.data.datasets[0].data[4] = parseFloat(acetona);
       grafica1.update();
     }
   }, [co]);
 
+  useEffect(() => {
+    if(grafica_gi){
+    grafica_gi.data.labels=segundos
+    grafica_gi.update();
+    console.log(segundos)}
+  },[segundos]);
+
+  useEffect(() => {
+    if(grafica_gi){
+      if(grafica_gi.data.datasets[0].data.length<5){
+    grafica_gi.data.datasets[0].data=[...grafica_gi.data.datasets[0].data,mpu_giro[0]]
+    grafica_gi.data.datasets[1].data=[...grafica_gi.data.datasets[1].data,mpu_giro[1]]
+    grafica_gi.data.datasets[2].data=[...grafica_gi.data.datasets[2].data,mpu_giro[2]]}
+    else{
+      grafica_gi.data.datasets[0].data=[...grafica_gi.data.datasets[0].data.slice(1),mpu_giro[0]]
+    grafica_gi.data.datasets[1].data=[...grafica_gi.data.datasets[1].data.slice(1),mpu_giro[1]]
+    grafica_gi.data.datasets[2].data=[...grafica_gi.data.datasets[2].data.slice(1),mpu_giro[2]]
+    }
+    grafica_gi.update();
+    console.log(segundos)}
+  },[mpu_giro]);
+
+
   return (
     <div className="container text-white mx-auto">
       {/*THREE JS*/}
-      {<div className=" flex items-center justify-center">
+      {/*<div className=" flex items-center justify-center">
         <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 flex flex-col md:flex-row w-96">
           <div className="mx-auto pr-4">
             <h2 className="text-2xl mb-4">Cilindro 3D</h2>
@@ -250,25 +340,32 @@ export default function Tracking() {
           </div>
 
         </div>
-      </div>}
+  </div>*/}
       <div className="grid grid-cols-2 ">
-        <div className="w-[36rem] h-96 mx-auto ">
-          {lat!="" && <Map latitud={lat} longitud={long}></Map>}
-        </div>
+
         <div id="container"></div>
 
-
+        {lat != "" && 
+        <div className="w-[36rem] h-96 mx-auto border-4 rounded-xl ">
+          <Map latitud={lat} longitud={long}></Map>
+        </div>
+        }
+        
       </div>
 
 
       {/* GRÁFICOS */}
       <div className="mx-auto grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 border-gray-200 mt-16 lg:mx-0 lg:max-w-none lg:grid-cols-2">
         <div className="border-2 rounded-xl p-4 text-center">
-          <a className="text-center">GRÁFICO 1</a>
+          <a className="text-center text-md">GASES (PPM)</a>
           <canvas id="bar-chart" width="800" height="450"></canvas>
         </div>
         <div className="border-2 rounded-xl p-4 text-center">
-          <a className="text-center">GRÁFICO 2</a>
+          <a className="text-center ">GIROSCOPIO</a>
+          <canvas id="line-chart-giroscopio" width="800" height="450"></canvas>
+        </div>
+        <div className="border-2 rounded-xl p-4 text-center">
+          <a className="text-center ">GRÁFICO 2</a>
           <canvas id="line-chart" width="800" height="450"></canvas>
         </div>
         <div className="border-2 rounded-xl p-4 text-center">
