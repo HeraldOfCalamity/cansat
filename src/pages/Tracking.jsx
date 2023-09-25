@@ -15,6 +15,8 @@ export default function Tracking() {
 
   const [grafica1, set_grafica1] = useState();
   const [grafica_gi, set_grafica_gi] = useState();
+  const [grafica_mag, set_grafica_mag] = useState();
+  const [grafica_ace, set_grafica_ace] = useState();
 
   //MQ135
   const [co, set_co] = useState("");
@@ -28,8 +30,9 @@ export default function Tracking() {
   const [long, set_long] = useState("");
 
   //MPU9250
-  const [mpu_giro, set_mpu_giro] = useState([0,0,0]);
-
+  const [mpu_giro, set_mpu_giro] = useState([0, 0, 0]);
+  const [mpu_mag, set_mpu_mag] = useState([0, 0, 0]);
+  const [mpu_ace, set_mpu_ace] = useState([0, 0, 0]);
 
   //time
   const [segundos, set_segundos] = useState([0]);
@@ -57,15 +60,18 @@ export default function Tracking() {
         set_long(parseFloat(dates.longitud))
 
         //mpu
-        set_mpu_giro([parseFloat(dates.g_x),parseFloat(dates.g_y),parseFloat(dates.g_z)])
+        set_mpu_giro([parseFloat(dates.g_x), parseFloat(dates.g_y), parseFloat(dates.g_z)])
+        set_mpu_mag([parseFloat(dates.m_x), parseFloat(dates.m_y), parseFloat(dates.m_z)])
+        set_mpu_ace([parseFloat(dates.a_x), parseFloat(dates.a_y), parseFloat(dates.a_z)])
+
         //tiempo
-        set_segundos(prevSegundos => prevSegundos.length<5 ? [...prevSegundos, prevSegundos[prevSegundos.length - 1] + 0.5] : [...prevSegundos.slice(1), prevSegundos[prevSegundos.length - 1] + 0.5]);
-        
+        set_segundos(prevSegundos => prevSegundos.length < 5 ? [...prevSegundos, prevSegundos[prevSegundos.length - 1] + 0.5] : [...prevSegundos.slice(1), prevSegundos[prevSegundos.length - 1] + 0.5]);
+
       })
       .catch(error => {
         console.error('Error al realizar la solicitud GET:', error);
       });
-      
+
   }
 
 
@@ -77,7 +83,7 @@ export default function Tracking() {
         datasets: [
           {
             label: "ppm",
-            backgroundColor: ["#3e95cd", "#3e95cd", "#3e95cd", "#3e95cd", "#3e95cd"],
+            backgroundColor: ["#3e95cd", "#8e5ea2", "#3cba9f", "#e8c3b9", "#c45850"],
             data: [15, 20]
           }
         ]
@@ -110,7 +116,7 @@ export default function Tracking() {
           label: "EJE Z",
           borderColor: "#3cba9f",
           fill: false
-        }, 
+        },
         ]
       },
       options: {
@@ -120,8 +126,72 @@ export default function Tracking() {
         }
       }
     });
-    
+
     set_grafica_gi(giro);
+    var mag = new Chart(document.getElementById("line-chart-mag"), {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          data: [],
+          label: "EJE X",
+          borderColor: "#3e95cd",
+          fill: false
+        }, {
+          data: [],
+          label: "EJE Y",
+          borderColor: "#8e5ea2",
+          fill: false
+        }, {
+          data: [],
+          label: "EJE Z",
+          borderColor: "#3cba9f",
+          fill: false
+        },
+        ]
+      },
+      options: {
+        title: {
+          display: true,
+          text: 'Datos del Magnetometro respecto el tiempo'
+        }
+      }
+    });
+
+    set_grafica_mag(mag);
+
+    var acc = new Chart(document.getElementById("line-chart-ace"), {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [
+          {
+            data: [],
+            label: "EJE X",
+            borderColor: "#3cba9f",
+            fill: false
+          }, {
+            data: [],
+            label: "EJE Y",
+            borderColor: "#e8c3b9",
+            fill: false
+          }, {
+            data: [],
+            label: "EJE Z",
+            borderColor: "#c45850",
+            fill: false
+          }
+        ]
+      },
+      options: {
+        title: {
+          display: true,
+          text: 'Datos del Acelerometro respecto el tiempo'
+        }
+      }
+    });
+    set_grafica_ace(acc);
+
     new Chart(document.getElementById("line-chart"), {
       type: 'line',
       data: {
@@ -161,7 +231,7 @@ export default function Tracking() {
         }
       }
     });
-    
+
     new Chart(document.getElementById("doughnut-chart"), {
       type: 'doughnut',
       data: {
@@ -254,8 +324,8 @@ export default function Tracking() {
 
     setInterval(() => {
       getData();
-      
-      
+
+
     }, (500));
   }, [])
 
@@ -294,26 +364,62 @@ export default function Tracking() {
   }, [co]);
 
   useEffect(() => {
-    if(grafica_gi){
-    grafica_gi.data.labels=segundos
-    grafica_gi.update();
-    console.log(segundos)}
-  },[segundos]);
+    if (grafica_gi) {
+      grafica_gi.data.labels = segundos
+      grafica_mag.data.labels = segundos
+      grafica_ace.data.labels = segundos
+      console.log(segundos)
+    }
+  }, [segundos]);
 
   useEffect(() => {
-    if(grafica_gi){
-      if(grafica_gi.data.datasets[0].data.length<5){
-    grafica_gi.data.datasets[0].data=[...grafica_gi.data.datasets[0].data,mpu_giro[0]]
-    grafica_gi.data.datasets[1].data=[...grafica_gi.data.datasets[1].data,mpu_giro[1]]
-    grafica_gi.data.datasets[2].data=[...grafica_gi.data.datasets[2].data,mpu_giro[2]]}
-    else{
-      grafica_gi.data.datasets[0].data=[...grafica_gi.data.datasets[0].data.slice(1),mpu_giro[0]]
-    grafica_gi.data.datasets[1].data=[...grafica_gi.data.datasets[1].data.slice(1),mpu_giro[1]]
-    grafica_gi.data.datasets[2].data=[...grafica_gi.data.datasets[2].data.slice(1),mpu_giro[2]]
+    if (grafica_gi) {
+      if (grafica_gi.data.datasets[0].data.length < 5) {
+        grafica_gi.data.datasets[0].data = [...grafica_gi.data.datasets[0].data, mpu_giro[0]]
+        grafica_gi.data.datasets[1].data = [...grafica_gi.data.datasets[1].data, mpu_giro[1]]
+        grafica_gi.data.datasets[2].data = [...grafica_gi.data.datasets[2].data, mpu_giro[2]]
+      }
+      else {
+        grafica_gi.data.datasets[0].data = [...grafica_gi.data.datasets[0].data.slice(1), mpu_giro[0]]
+        grafica_gi.data.datasets[1].data = [...grafica_gi.data.datasets[1].data.slice(1), mpu_giro[1]]
+        grafica_gi.data.datasets[2].data = [...grafica_gi.data.datasets[2].data.slice(1), mpu_giro[2]]
+      }
+      grafica_gi.update();
+      console.log(segundos)
     }
-    grafica_gi.update();
-    console.log(segundos)}
-  },[mpu_giro]);
+  }, [mpu_giro]);
+  useEffect(() => {
+    if (grafica_mag) {
+      if (grafica_mag.data.datasets[0].data.length < 5) {
+        grafica_mag.data.datasets[0].data = [...grafica_mag.data.datasets[0].data, mpu_mag[0]]
+        grafica_mag.data.datasets[1].data = [...grafica_mag.data.datasets[1].data, mpu_mag[1]]
+        grafica_mag.data.datasets[2].data = [...grafica_mag.data.datasets[2].data, mpu_mag[2]]
+      }
+      else {
+        grafica_mag.data.datasets[0].data = [...grafica_mag.data.datasets[0].data.slice(1), mpu_mag[0]]
+        grafica_mag.data.datasets[1].data = [...grafica_mag.data.datasets[1].data.slice(1), mpu_mag[1]]
+        grafica_mag.data.datasets[2].data = [...grafica_mag.data.datasets[2].data.slice(1), mpu_mag[2]]
+      }
+      grafica_mag.update();
+      console.log(segundos)
+    }
+  }, [mpu_mag]);
+  useEffect(() => {
+    if (grafica_ace) {
+      if (grafica_ace.data.datasets[0].data.length < 5) {
+        grafica_ace.data.datasets[0].data = [...grafica_ace.data.datasets[0].data, mpu_ace[0]]
+        grafica_ace.data.datasets[1].data = [...grafica_ace.data.datasets[1].data, mpu_ace[1]]
+        grafica_ace.data.datasets[2].data = [...grafica_ace.data.datasets[2].data, mpu_ace[2]]
+      }
+      else {
+        grafica_ace.data.datasets[0].data = [...grafica_ace.data.datasets[0].data.slice(1), mpu_ace[0]]
+        grafica_ace.data.datasets[1].data = [...grafica_ace.data.datasets[1].data.slice(1), mpu_ace[1]]
+        grafica_ace.data.datasets[2].data = [...grafica_ace.data.datasets[2].data.slice(1), mpu_ace[2]]
+      }
+      grafica_ace.update();
+      console.log(segundos)
+    }
+  }, [mpu_ace]);
 
 
   return (
@@ -345,12 +451,12 @@ export default function Tracking() {
 
         <div id="container"></div>
 
-        {lat != "" && 
-        <div className="w-[36rem] h-96 mx-auto border-4 rounded-xl ">
-          <Map latitud={lat} longitud={long}></Map>
-        </div>
+        {lat != "" &&
+          <div className="w-[36rem] h-96 mx-auto border-4 rounded-xl ">
+            <Map latitud={lat} longitud={long}></Map>
+          </div>
         }
-        
+
       </div>
 
 
@@ -363,6 +469,14 @@ export default function Tracking() {
         <div className="border-2 rounded-xl p-4 text-center">
           <a className="text-center ">GIROSCOPIO</a>
           <canvas id="line-chart-giroscopio" width="800" height="450"></canvas>
+        </div>
+        <div className="border-2 rounded-xl p-4 text-center">
+          <a className="text-center ">ACELEROMETRO</a>
+          <canvas id="line-chart-ace" width="800" height="450"></canvas>
+        </div>
+        <div className="border-2 rounded-xl p-4 text-center">
+          <a className="text-center ">MAGNETOMETRO</a>
+          <canvas id="line-chart-mag" width="800" height="450"></canvas>
         </div>
         <div className="border-2 rounded-xl p-4 text-center">
           <a className="text-center ">GRÁFICO 2</a>
