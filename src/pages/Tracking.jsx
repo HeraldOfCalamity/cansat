@@ -492,7 +492,7 @@ export default function Tracking() {
         </div>
         <div className="border-2 rounded-xl p-4 text-center">
           <a className="text-center">GRÁFICO 5</a>
-          <GaugeChart id="gauge-chart3"
+          <GaugeChart id="gauge-chart"
             nrOfLevels={30}
             colors={["#FF5F6D", "#FFC371"]}
             arcWidth={0.3}
