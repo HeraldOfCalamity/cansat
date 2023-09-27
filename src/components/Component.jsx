@@ -2,7 +2,7 @@ export const Component = ({ id, img, desc, title }) => {
 
     return (
         <div className="flex flex-col pb-5">
-            <h4 className="text-xl pb-5 font-semibold text-center bg-teal-400 rounded-md mb-4">{title}</h4>
+            <h4 className="text-xl pb-5 font-semibold text-center bg-violet-900 rounded-md mb-4">{title}</h4>
             <div className="flex flex-row">
                 {
                     id % 2 == 0 ?
