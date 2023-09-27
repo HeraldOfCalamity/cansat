@@ -1,4 +1,6 @@
-export const Ia = () => {
+import React from "react"
+
+export default function Ia () {
     return (
         <>
             <h1 className="text-green-500">Ia</h1>
