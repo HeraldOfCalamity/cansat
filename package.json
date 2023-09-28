@@ -14,6 +14,8 @@
     "@heroicons/react": "^2.0.18",
     "autoprefixer": "^10.4.16",
     "axios": "^1.5.0",
+    "highcharts": "^11.1.0",
+    "highcharts-react-official": "^3.2.1",
     "lodash": "^4.17.21",
     "postcss": "^8.4.30",
     "react": "^18.2.0",

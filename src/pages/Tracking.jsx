@@ -2,10 +2,99 @@ import React, { useEffect, useState } from "react";
 import GaugeChart from 'react-gauge-chart';
 import axios from 'axios';
 import Map from "../components/Map";
+import Highcharts, { chart } from 'highcharts';
+import HighchartsMore from 'highcharts/highcharts-more'; // Import the More module
+import HighchartsReact from 'highcharts-react-official';
+
+HighchartsMore(Highcharts);
 
 export default function Tracking() {
 
-
+  const [chartOptions, setChartOptions] = useState({
+    chart: {
+      type: 'gauge',
+      plotBackgroundColor: '#333',
+      plotBackgroundImage: null,
+      plotBorderWidth: 0,
+      plotShadow: false
+    },
+    title: {
+      text: 'Temperatura en grados Farenheit'
+    },
+    pane: {
+      startAngle: -150,
+      endAngle: 150,
+      background: [
+        {
+          backgroundColor: {
+            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+            stops: [
+              [0, '#FFF'],
+              [1, '#333']
+            ]
+          },
+          borderWidth: 0,
+          outerRadius: '109%'
+        },
+        {
+          backgroundColor: {
+            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+            stops: [
+              [0, '#333'],
+              [1, '#FFF']
+            ]
+          },
+          borderWidth: 1,
+          outerRadius: '107%'
+        },
+        {
+          // Default background
+        },
+        {
+          backgroundColor: '#DDD',
+          borderWidth: 0,
+          outerRadius: '105%',
+          innerRadius: '103%'
+        }
+      ]
+    },
+    // Define your chart configuration here
+    yAxis: {
+      min: 0,
+      max: 100,
+      minorTickPosition: 'outside',
+      tickPosition: 'outside',
+      labels: {
+        rotation: 'auto'
+      },
+      plotBands: [
+        {
+          from: 0,
+          to: 60,
+          color: '#55BF3B' // Green
+        },
+        {
+          from: 60,
+          to: 80,
+          color: '#DDDF0D' // Yellow
+        },
+        {
+          from: 80,
+          to: 100,
+          color: '#DF5353' // Red
+        }
+      ]
+    },
+    series: [
+      {
+        name: 'Value',
+        data: [],
+        tooltip: {
+          valueSuffix: ' %'
+        }
+      }
+    ]
+  });
   const [x, set_x] = useState(1);
   const [y, set_y] = useState(1);
   const [z, set_z] = useState(1);
@@ -18,6 +107,10 @@ export default function Tracking() {
   const [grafica_gi, set_grafica_gi] = useState();
   const [grafica_mag, set_grafica_mag] = useState();
   const [grafica_ace, set_grafica_ace] = useState();
+  const [grafica_temp, set_graficatemp] = useState();
+  const [grafica_co2, set_graficaco2] = useState();
+  const [grafica_alt_pre, set_grafica_alt_pre] = useState();
+
 
   //MQ135
   const [co, set_co] = useState("");
@@ -25,10 +118,14 @@ export default function Tracking() {
   const [tolueno, set_tolueno] = useState("");
   const [nh4, set_nh4] = useState("");
   const [acetona, set_acetona] = useState("");
+  const [co2, set_co2] = useState("");
+  const [temp, set_temp] = useState("");
 
   //gps
   const [lat, set_lat] = useState("");
   const [long, set_long] = useState("");
+  const [alt, set_alt] = useState("");
+  const [pre, set_pre] = useState("");
 
   //MPU9250
   const [mpu_giro, set_mpu_giro] = useState([0, 0, 0]);
@@ -38,10 +135,10 @@ export default function Tracking() {
   //time
   const [segundos, set_segundos] = useState([0]);
 
-  const getCo2Percentage = () => {
-    let total = co + alcohol + tolueno + nh4 + acetona;
-    return co / total;
-  }
+  // const getCo2Percentage = () => {
+  //   let total = co + alcohol + tolueno + nh4 + acetona;
+  //   return co / total;
+  // }
 
   function getData() {
     axios.get('http://127.0.0.1:5000/api/get')
@@ -50,10 +147,12 @@ export default function Tracking() {
         const dates = response.data[0];
         //Gases
         set_co(dates.co);
+        set_co2(dates.co2);
         set_alcohol(dates.alcohol);
         set_tolueno(dates.toluen);
         set_nh4(dates.nh4);
         set_acetona(dates.acetona);
+        set_temp(dates.temperatura);
 
 
         //yaw, pitch, roll
@@ -64,6 +163,9 @@ export default function Tracking() {
         //gps
         set_lat(parseFloat(dates.latitud))
         set_long(parseFloat(dates.longitud))
+        set_alt(parseFloat(dates.altura))
+        set_pre(parseFloat(dates.presion))
+
 
         //mpu
         set_mpu_giro([parseFloat(dates.g_x), parseFloat(dates.g_y), parseFloat(dates.g_z)])
@@ -198,13 +300,13 @@ export default function Tracking() {
     });
     set_grafica_ace(acc);
 
-    new Chart(document.getElementById("presion-altura"), {
+    var pre_alt = new Chart(document.getElementById("presion-altura"), {
       type: 'line',
       data: {
-        labels: [250, 225, 200, 175, 150, 125, 100, 75, 50, 25, 0], // altura
+        labels: [], // altura
         datasets: [{
-          data: [1.75, 1.80, 1.85, 1.87, 1.92, 1.95, 1.94, 1.97, 2, 2.2, 2.5], // presion
-          label: "ATM vs Mts",
+          data: [], // presion
+          label: "Pascales vs Mts",
           borderColor: "#3e95cd",
           fill: false
         },
@@ -217,64 +319,22 @@ export default function Tracking() {
         }
       }
     });
+    set_grafica_alt_pre(pre_alt);
 
-    // new Chart(document.getElementById("doughnut-chart"), {
-    //   type: 'doughnut',
-    //   data: {
-    //     labels: ["Africa", "Asia", "Europe", "Latin America", "North America"],
-    //     datasets: [
-    //       {
-    //         label: "Population (millions)",
-    //         backgroundColor: ["#3e95cd", "#8e5ea2", "#3cba9f", "#e8c3b9", "#c45850"],
-    //         data: [2478, 5267, 734, 784, 433]
-    //       }
-    //     ]
-    //   },
-    //   options: {
-    //     title: {
-    //       display: true,
-    //       text: 'Predicted world population (millions) in 2050'
-    //     }
-    //   }
-    // });
-    // new Chart(document.getElementById("mixed-chart"), {
-    //   type: 'bar',
-    //   data: {
-    //     labels: ["1900", "1950", "1999", "2050"],
-    //     datasets: [{
-    //       label: "Europe",
-    //       type: "line",
-    //       borderColor: "#8e5ea2",
-    //       data: [408, 547, 675, 734],
-    //       fill: false
-    //     }, {
-    //       label: "Africa",
-    //       type: "line",
-    //       borderColor: "#3e95cd",
-    //       data: [133, 221, 783, 2478],
-    //       fill: false
-    //     }, {
-    //       label: "Europe",
-    //       type: "bar",
-    //       backgroundColor: "rgba(0,0,0,0.2)",
-    //       data: [408, 547, 675, 734],
-    //     }, {
-    //       label: "Africa",
-    //       type: "bar",
-    //       backgroundColor: "rgba(0,0,0,0.2)",
-    //       backgroundColorHover: "#3e95cd",
-    //       data: [133, 221, 783, 2478]
-    //     }
-    //     ]
-    //   },
-    //   options: {
-    //     title: {
-    //       display: true,
-    //       text: 'Population growth (millions): Europe & Africa'
-    //     },
-    //     legend: { display: false }
-    //   }
-    // });
+    
+      // Create the initial chart once when the component mounts
+    var chartTemp = Highcharts.chart('chartTemp', chartOptions);
+  
+    // Set the chart options in state for future updates
+    setChartOptions({
+      chartOptions
+    });
+  
+    // Store the chart instance
+    set_graficatemp(chartTemp);
+  
+      
+    
 
 
 
@@ -306,7 +366,7 @@ export default function Tracking() {
     set_cylinder(cylinder);
 
     renderer.render(scene, camera);
-    console.log("INIT");
+    // console.log("INIT");
 
     setInterval(() => {
       getData();
@@ -314,7 +374,7 @@ export default function Tracking() {
 
     }, (500));
   }, [])
-
+  // console.log(temp);
   useEffect(() => {
     if (sceneg && camerag && rendererg && cylinderg) {
       //requestAnimationFrame(animate);
@@ -337,7 +397,7 @@ export default function Tracking() {
       rendererg.render(sceneg, camerag);
     }
   }, [x, y, z])
-
+  // console.log(parseFloat(temp))
   useEffect(() => {
     if (grafica1) {
       grafica1.data.datasets[0].data[0] = parseFloat(co);
@@ -349,14 +409,49 @@ export default function Tracking() {
     }
   }, [co]);
 
+  
+  useEffect(() => {
+    // Update the chart data when the 'temp' value changes
+    chartOptions.series[0].data[0] = parseFloat(temp);
+    setChartOptions((prevOptions) => ({
+      ...prevOptions,
+      series: chartOptions.series, // Update the series data
+    }));
+  }, [temp]);
+  
   useEffect(() => {
     if (grafica_gi) {
       grafica_gi.data.labels = segundos
       grafica_mag.data.labels = segundos
       grafica_ace.data.labels = segundos
-      console.log(segundos)
+      // console.log(grafica_gi)
     }
   }, [segundos]);
+  
+  useEffect(() => {
+    if(grafica_alt_pre){
+      if (grafica_gi.data.datasets[0].data.length < 5) {
+        grafica_alt_pre.data.labels = [...grafica_alt_pre.data.labels, alt]
+      }
+      else{
+        grafica_alt_pre.data.labels = [...grafica_alt_pre.data.labels.slice(1), alt]
+      }
+      grafica_alt_pre.update()
+    }
+
+  }, [segundos])
+
+  useEffect(() => {
+    if(grafica_alt_pre){
+      if (grafica_alt_pre.data.datasets[0].data.length < 5) {
+        grafica_alt_pre.data.datasets[0].data = [...grafica_alt_pre.data.datasets[0].data, pre]
+      }
+      else {
+        grafica_alt_pre.data.datasets[0].data = [...grafica_alt_pre.data.datasets[0].data.slice(1), pre]
+      }
+      grafica_alt_pre.update()
+    }
+  }, [segundos])
 
   useEffect(() => {
     if (grafica_gi) {
@@ -371,7 +466,7 @@ export default function Tracking() {
         grafica_gi.data.datasets[2].data = [...grafica_gi.data.datasets[2].data.slice(1), mpu_giro[2]]
       }
       grafica_gi.update();
-      console.log(segundos)
+      // console.log(segundos)
     }
   }, [mpu_giro]);
   useEffect(() => {
@@ -387,7 +482,7 @@ export default function Tracking() {
         grafica_mag.data.datasets[2].data = [...grafica_mag.data.datasets[2].data.slice(1), mpu_mag[2]]
       }
       grafica_mag.update();
-      console.log(segundos)
+      // console.log(segundos)
     }
   }, [mpu_mag]);
   useEffect(() => {
@@ -403,7 +498,7 @@ export default function Tracking() {
         grafica_ace.data.datasets[2].data = [...grafica_ace.data.datasets[2].data.slice(1), mpu_ace[2]]
       }
       grafica_ace.update();
-      console.log(segundos)
+      // console.log(segundos)
     }
   }, [mpu_ace]);
 
@@ -458,7 +553,7 @@ export default function Tracking() {
         </div>
       </div>
       <div className="mx-auto grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 border-gray-200 mt-16 lg:mx-0 lg:max-w-none lg:grid-cols-3">
-        
+
 
         <div className="border-2 rounded-xl p-4 text-center">
           <a className="text-center ">GIROSCOPIO</a>
@@ -472,7 +567,7 @@ export default function Tracking() {
           <a className="text-center ">MAGNETOMETRO</a>
           <canvas id="line-chart-mag" width="800" height="450"></canvas>
         </div>
-        
+
 
 
         {/* <div className="border-2 rounded-xl p-4 text-center">
@@ -487,25 +582,23 @@ export default function Tracking() {
 
       </div>
       <div className="mx-auto grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 border-gray-200 mt-16 lg:mx-0 lg:max-w-none lg:grid-cols-2">
-      <div className="border-2 rounded-xl p-4 text-center">
-          <a className="text-center">TEMPERATURA (C)</a>
+        <div className="border-2 rounded-xl p-4 text-center">
+          <a className="text-center">TEMPERATURA (F)</a>
 
-          <GaugeChart id="gauge-chart3"
-            nrOfLevels={30}
-            colors={["#0180FE", "#FF0101"]}
-            arcWidth={0.3}
-            percent={0.37}
-          />
+          <div id="chartTemp" className="w-80 h-80 mx-auto">
+            <HighchartsReact highcharts={Highcharts} options={chartOptions} />
+          </div>
+
 
         </div>
         <div className="border-2 rounded-xl p-4 text-center">
           <a className="text-center">NIVEL DE CO2</a>
-          <GaugeChart id="gauge-chart4"
+          {/* <GaugeChart id="gauge-chart4"
             nrOfLevels={10}
             arcPadding={0.1}
             cornerRadius={3}
             percent={getCo2Percentage()}
-          />
+          /> */}
 
         </div>
       </div>
