@@ -5,6 +5,7 @@ import Map from "../components/Map";
 
 export default function Tracking() {
 
+
   const [x, set_x] = useState(1);
   const [y, set_y] = useState(1);
   const [z, set_z] = useState(1);
@@ -36,6 +37,11 @@ export default function Tracking() {
 
   //time
   const [segundos, set_segundos] = useState([0]);
+
+  const getCo2Percentage = () => {
+    let total = co + alcohol + tolueno + nh4 + acetona;
+    return co / total;
+  }
 
   function getData() {
     axios.get('http://127.0.0.1:5000/api/get')
@@ -192,36 +198,16 @@ export default function Tracking() {
     });
     set_grafica_ace(acc);
 
-    new Chart(document.getElementById("line-chart"), {
+    new Chart(document.getElementById("presion-altura"), {
       type: 'line',
       data: {
-        labels: [1500, 1600, 1700, 1750, 1800, 1850, 1900, 1950, 1999, 2050],
+        labels: [250, 225, 200, 175, 150, 125, 100, 75, 50, 25, 0], // altura
         datasets: [{
-          data: [86, 114, 106, 106, 107, 111, 133, 221, 783, 2478],
-          label: "Africa",
+          data: [1.75, 1.80, 1.85, 1.87, 1.92, 1.95, 1.94, 1.97, 2, 2.2, 2.5], // presion
+          label: "ATM vs Mts",
           borderColor: "#3e95cd",
           fill: false
-        }, {
-          data: [282, 350, 411, 502, 635, 809, 947, 1402, 3700, 5267],
-          label: "Asia",
-          borderColor: "#8e5ea2",
-          fill: false
-        }, {
-          data: [168, 170, 178, 190, 203, 276, 408, 547, 675, 734],
-          label: "Europe",
-          borderColor: "#3cba9f",
-          fill: false
-        }, {
-          data: [40, 20, 10, 16, 24, 38, 74, 167, 508, 784],
-          label: "Latin America",
-          borderColor: "#e8c3b9",
-          fill: false
-        }, {
-          data: [6, 3, 2, 2, 7, 26, 82, 172, 312, 433],
-          label: "North America",
-          borderColor: "#c45850",
-          fill: false
-        }
+        },
         ]
       },
       options: {
@@ -232,63 +218,63 @@ export default function Tracking() {
       }
     });
 
-    new Chart(document.getElementById("doughnut-chart"), {
-      type: 'doughnut',
-      data: {
-        labels: ["Africa", "Asia", "Europe", "Latin America", "North America"],
-        datasets: [
-          {
-            label: "Population (millions)",
-            backgroundColor: ["#3e95cd", "#8e5ea2", "#3cba9f", "#e8c3b9", "#c45850"],
-            data: [2478, 5267, 734, 784, 433]
-          }
-        ]
-      },
-      options: {
-        title: {
-          display: true,
-          text: 'Predicted world population (millions) in 2050'
-        }
-      }
-    });
-    new Chart(document.getElementById("mixed-chart"), {
-      type: 'bar',
-      data: {
-        labels: ["1900", "1950", "1999", "2050"],
-        datasets: [{
-          label: "Europe",
-          type: "line",
-          borderColor: "#8e5ea2",
-          data: [408, 547, 675, 734],
-          fill: false
-        }, {
-          label: "Africa",
-          type: "line",
-          borderColor: "#3e95cd",
-          data: [133, 221, 783, 2478],
-          fill: false
-        }, {
-          label: "Europe",
-          type: "bar",
-          backgroundColor: "rgba(0,0,0,0.2)",
-          data: [408, 547, 675, 734],
-        }, {
-          label: "Africa",
-          type: "bar",
-          backgroundColor: "rgba(0,0,0,0.2)",
-          backgroundColorHover: "#3e95cd",
-          data: [133, 221, 783, 2478]
-        }
-        ]
-      },
-      options: {
-        title: {
-          display: true,
-          text: 'Population growth (millions): Europe & Africa'
-        },
-        legend: { display: false }
-      }
-    });
+    // new Chart(document.getElementById("doughnut-chart"), {
+    //   type: 'doughnut',
+    //   data: {
+    //     labels: ["Africa", "Asia", "Europe", "Latin America", "North America"],
+    //     datasets: [
+    //       {
+    //         label: "Population (millions)",
+    //         backgroundColor: ["#3e95cd", "#8e5ea2", "#3cba9f", "#e8c3b9", "#c45850"],
+    //         data: [2478, 5267, 734, 784, 433]
+    //       }
+    //     ]
+    //   },
+    //   options: {
+    //     title: {
+    //       display: true,
+    //       text: 'Predicted world population (millions) in 2050'
+    //     }
+    //   }
+    // });
+    // new Chart(document.getElementById("mixed-chart"), {
+    //   type: 'bar',
+    //   data: {
+    //     labels: ["1900", "1950", "1999", "2050"],
+    //     datasets: [{
+    //       label: "Europe",
+    //       type: "line",
+    //       borderColor: "#8e5ea2",
+    //       data: [408, 547, 675, 734],
+    //       fill: false
+    //     }, {
+    //       label: "Africa",
+    //       type: "line",
+    //       borderColor: "#3e95cd",
+    //       data: [133, 221, 783, 2478],
+    //       fill: false
+    //     }, {
+    //       label: "Europe",
+    //       type: "bar",
+    //       backgroundColor: "rgba(0,0,0,0.2)",
+    //       data: [408, 547, 675, 734],
+    //     }, {
+    //       label: "Africa",
+    //       type: "bar",
+    //       backgroundColor: "rgba(0,0,0,0.2)",
+    //       backgroundColorHover: "#3e95cd",
+    //       data: [133, 221, 783, 2478]
+    //     }
+    //     ]
+    //   },
+    //   options: {
+    //     title: {
+    //       display: true,
+    //       text: 'Population growth (millions): Europe & Africa'
+    //     },
+    //     legend: { display: false }
+    //   }
+    // });
 
 
 
@@ -447,12 +433,12 @@ export default function Tracking() {
 
         </div>
   </div>*/}
-      <div className="grid grid-cols-2 ">
+      <div className="grid grid-cols-2 border-gray-200">
 
-        <div id="container"></div>
+        <div className="border-2 rounded-xl" id="container"></div>
 
         {lat != "" &&
-          <div className="w-[36rem] h-96 mx-auto border-4 rounded-xl ">
+          <div className="w-[36rem] h-96 mx-auto border-4 rounded-xl">
             <Map latitud={lat} longitud={long}></Map>
           </div>
         }
@@ -467,6 +453,14 @@ export default function Tracking() {
           <canvas id="bar-chart" width="800" height="450"></canvas>
         </div>
         <div className="border-2 rounded-xl p-4 text-center">
+          <a className="text-center ">PRESION VS ALTURA</a>
+          <canvas id="presion-altura" width="800" height="450"></canvas>
+        </div>
+      </div>
+      <div className="mx-auto grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 border-gray-200 mt-16 lg:mx-0 lg:max-w-none lg:grid-cols-3">
+        
+
+        <div className="border-2 rounded-xl p-4 text-center">
           <a className="text-center ">GIROSCOPIO</a>
           <canvas id="line-chart-giroscopio" width="800" height="450"></canvas>
         </div>
@@ -478,26 +472,41 @@ export default function Tracking() {
           <a className="text-center ">MAGNETOMETRO</a>
           <canvas id="line-chart-mag" width="800" height="450"></canvas>
         </div>
-        <div className="border-2 rounded-xl p-4 text-center">
-          <a className="text-center ">GRÁFICO 2</a>
-          <canvas id="line-chart" width="800" height="450"></canvas>
-        </div>
-        <div className="border-2 rounded-xl p-4 text-center">
+        
+
+
+        {/* <div className="border-2 rounded-xl p-4 text-center">
           <a className="text-center">GRÁFICO 3</a>
           <canvas id="doughnut-chart" width="800" height="450"></canvas>
         </div>
         <div className="border-2 rounded-xl p-4 text-center">
           <a className="text-center">GRÁFICO 4</a>
           <canvas id="mixed-chart" width="800" height="450"></canvas>
-        </div>
-        <div className="border-2 rounded-xl p-4 text-center">
-          <a className="text-center">GRÁFICO 5</a>
-          <GaugeChart id="gauge-chart"
+        </div> */}
+
+
+      </div>
+      <div className="mx-auto grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 border-gray-200 mt-16 lg:mx-0 lg:max-w-none lg:grid-cols-2">
+      <div className="border-2 rounded-xl p-4 text-center">
+          <a className="text-center">TEMPERATURA (C)</a>
+
+          <GaugeChart id="gauge-chart3"
             nrOfLevels={30}
-            colors={["#FF5F6D", "#FFC371"]}
+            colors={["#0180FE", "#FF0101"]}
             arcWidth={0.3}
             percent={0.37}
           />
+
+        </div>
+        <div className="border-2 rounded-xl p-4 text-center">
+          <a className="text-center">NIVEL DE CO2</a>
+          <GaugeChart id="gauge-chart4"
+            nrOfLevels={10}
+            arcPadding={0.1}
+            cornerRadius={3}
+            percent={getCo2Percentage()}
+          />
+
         </div>
       </div>
     </div>
