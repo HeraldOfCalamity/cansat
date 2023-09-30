@@ -321,17 +321,6 @@ export default function Tracking() {
     });
     set_grafica_alt_pre(pre_alt);
 
-    
-      // Create the initial chart once when the component mounts
-    var chartTemp = Highcharts.chart('chartTemp', chartOptions);
-  
-    // Set the chart options in state for future updates
-    setChartOptions({
-      chartOptions
-    });
-  
-    // Store the chart instance
-    set_graficatemp(chartTemp);
   
       
     
@@ -347,10 +336,19 @@ export default function Tracking() {
     renderer.setSize(window.innerWidth / 2, window.innerHeight / 2);
     document.getElementById('container').appendChild(renderer.domElement);
 
-    const geometry = new THREE.CylinderGeometry(1, 1, 2, 32);
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff10 });
+    const geometry = new THREE.CylinderGeometry(1, 1, 2, 32, 1, true); // Añade más segmentos para suavizar
+    const material = new THREE.MeshPhongMaterial({ color: 0xffc600 });
+
     const cylinder = new THREE.Mesh(geometry, material);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Luz ambiente
+    scene.add(ambientLight);
+    
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.7); // Luz direccional
+    directionalLight.position.set(1, 1, 1);
+    scene.add(directionalLight);
+    
     scene.add(cylinder);
+    
 
     camera.position.z = 5;
 
@@ -430,7 +428,8 @@ export default function Tracking() {
   
   useEffect(() => {
     if(grafica_alt_pre){
-      if (grafica_gi.data.datasets[0].data.length < 5) {
+      if (grafica_alt_pre.data.labels.length < 20) {
+        // console.log(grafica_gi.data.labels.length)
         grafica_alt_pre.data.labels = [...grafica_alt_pre.data.labels, alt]
       }
       else{
@@ -439,11 +438,12 @@ export default function Tracking() {
       grafica_alt_pre.update()
     }
 
-  }, [segundos])
+  }, [alt])
 
   useEffect(() => {
     if(grafica_alt_pre){
-      if (grafica_alt_pre.data.datasets[0].data.length < 5) {
+      if (grafica_alt_pre.data.datasets[0].data.length < 20) {
+        // console.log(grafica_alt_pre.data.datasets[0].data.length)
         grafica_alt_pre.data.datasets[0].data = [...grafica_alt_pre.data.datasets[0].data, pre]
       }
       else {
@@ -451,7 +451,7 @@ export default function Tracking() {
       }
       grafica_alt_pre.update()
     }
-  }, [segundos])
+  }, [pre])
 
   useEffect(() => {
     if (grafica_gi) {
@@ -581,18 +581,20 @@ export default function Tracking() {
 
 
       </div>
-      <div className="mx-auto grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 border-gray-200 mt-16 lg:mx-0 lg:max-w-none lg:grid-cols-2">
+      <div className="mx-auto grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16  border-gray-200 mt-16 lg:mx-0 lg:max-w-none lg:grid-cols-2">
         <div className="border-2 rounded-xl p-4 text-center">
-          <a className="text-center">TEMPERATURA (F)</a>
-
-          <div id="chartTemp" className="w-80 h-80 mx-auto">
-            <HighchartsReact highcharts={Highcharts} options={chartOptions} />
+          <a className="text-center">TEMPERATURA (C)</a>
+          <div className="flex h-full items-center text-center justify-center" width="800" height="450">
+            <h2 className="flex justify-center text-8xl text-center my-10">{400}°</h2>
           </div>
 
 
         </div>
         <div className="border-2 rounded-xl p-4 text-center">
           <a className="text-center">NIVEL DE CO2</a>
+          <div className="flex h-full items-center text-center justify-center" width="800" height="450">
+            <h2 className="flex justify-center text-8xl text-center my-auto">{400+" PPM"}</h2>
+          </div>
           {/* <GaugeChart id="gauge-chart4"
             nrOfLevels={10}
             arcPadding={0.1}
